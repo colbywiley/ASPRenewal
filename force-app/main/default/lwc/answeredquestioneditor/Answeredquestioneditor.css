@@ -81,29 +81,32 @@ td .slds-truncate {
 }
 
 /* ─── Narrow (mobile) layout ────────────────────────────────────
-   Triggered by the `.is-narrow` class that the component applies to
-   its root <div> whenever the host element measures under 640px
-   (via ResizeObserver in the JS). Using a class instead of a viewport
-   media query means the layout adapts to the actual container width,
-   which is necessary because Salesforce Flow screens often render
-   inside containers that don't expose the true phone viewport.
-   !important is required to override the inline td styles that
-   renderedCallback sets for desktop word-wrap behavior. */
-.is-narrow .group-header {
-    font-size: 1rem;
-}
+   The `is-narrow` class is applied to the host element via
+   classList.toggle in JS (and mirrored onto the root <div> via the
+   rootClass getter as a fallback) whenever the host measures under
+   640px. Using :host(.is-narrow) avoids LWC's scoped-attribute
+   rewriting on class selectors, which was silently breaking the
+   previous approach. The .is-narrow fallback matches the inner div. */
 
-.is-narrow table.slds-table,
-.is-narrow table.slds-table tbody {
+:host(.is-narrow) table,
+.is-narrow table {
     display: block !important;
     width: 100% !important;
 }
 
-.is-narrow table.slds-table thead {
+:host(.is-narrow) table tbody,
+.is-narrow table tbody {
+    display: block !important;
+    width: 100% !important;
+}
+
+:host(.is-narrow) table thead,
+.is-narrow table thead {
     display: none !important;
 }
 
-.is-narrow table.slds-table tr {
+:host(.is-narrow) table tr,
+.is-narrow table tr {
     display: block !important;
     width: 100% !important;
     margin-bottom: 0.75rem !important;
@@ -112,7 +115,8 @@ td .slds-truncate {
     background-color: #fff !important;
 }
 
-.is-narrow table.slds-table td {
+:host(.is-narrow) table td,
+.is-narrow table td {
     display: block !important;
     width: 100% !important;
     max-width: none !important;
@@ -121,31 +125,38 @@ td .slds-truncate {
     border: none !important;
 }
 
+:host(.is-narrow) .question-cell,
 .is-narrow .question-cell {
     padding-bottom: 0 !important;
 }
 
+:host(.is-narrow) .question-label,
 .is-narrow .question-label {
     font-size: 0.95rem;
     padding-top: 0 !important;
 }
 
-/* Keep the error highlight spanning the whole stacked row */
+:host(.is-narrow) .group-header,
+.is-narrow .group-header {
+    font-size: 1rem;
+}
+
+:host(.is-narrow) .answer-row[data-error="true"],
 .is-narrow .answer-row[data-error="true"] {
     border-color: var(--slds-g-color-error-base-50, #ba0517) !important;
     box-shadow: 0 0 0 2px var(--slds-g-color-error-base-50, #ba0517) !important;
 }
+:host(.is-narrow) .answer-row[data-error="true"] > td,
 .is-narrow .answer-row[data-error="true"] > td {
     background-color: #fdecea !important;
     box-shadow: none !important;
 }
 
-/* Full-width, tap-friendly Next button.
-   SLDS styling hooks (--slds-c-button-*) pierce the lightning-button
-   shadow DOM; display:block + width:100% sizes the host. */
+:host(.is-narrow) .next-button-wrapper,
 .is-narrow .next-button-wrapper {
     justify-content: stretch;
 }
+:host(.is-narrow) .next-button-wrapper lightning-button,
 .is-narrow .next-button-wrapper lightning-button {
     display: block;
     width: 100%;
@@ -153,10 +164,11 @@ td .slds-truncate {
     --slds-c-button-brand-sizing-min-width: 100%;
 }
 
-/* Error banner sized for small screens */
+:host(.is-narrow) .error-banner h2,
 .is-narrow .error-banner h2 {
     font-size: 0.95rem;
 }
+:host(.is-narrow) .error-banner li,
 .is-narrow .error-banner li {
     font-size: 0.9rem;
 }

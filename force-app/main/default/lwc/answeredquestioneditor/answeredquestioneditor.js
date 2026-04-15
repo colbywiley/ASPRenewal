@@ -20,7 +20,7 @@ export default class AnsweredQuestionEditor extends LightningElement {
         // Seed initial narrow state from the viewport; the ResizeObserver
         // will correct it once the host element has a measured width.
         if (typeof window !== 'undefined') {
-            this._isNarrow = window.innerWidth < 640;
+            this._setNarrow(window.innerWidth < 640);
         }
     }
 
@@ -37,18 +37,35 @@ export default class AnsweredQuestionEditor extends LightningElement {
             this._resizeObserver = new ResizeObserver(entries => {
                 for (const entry of entries) {
                     const width = entry.contentRect ? entry.contentRect.width : 0;
-                    const narrow = width > 0 && width < 640;
-                    if (narrow !== this._isNarrow) {
-                        this._isNarrow = narrow;
+                    if (width > 0) {
+                        this._setNarrow(width < 640);
                     }
                 }
             });
             this._resizeObserver.observe(host);
         }
 
+        // Ensure the host element's class reflects the current narrow state
+        // even if the reactive field was seeded in connectedCallback before
+        // the host element had classList available.
+        this._syncHostClass();
+
         if (!this._stylesApplied && this._editedRows.length > 0) {
             this._stylesApplied = true;
             this._applyStyles();
+        }
+    }
+
+    _setNarrow(narrow) {
+        if (narrow !== this._isNarrow) {
+            this._isNarrow = narrow;
+        }
+        this._syncHostClass();
+    }
+
+    _syncHostClass() {
+        if (this.classList && typeof this.classList.toggle === 'function') {
+            this.classList.toggle('is-narrow', this._isNarrow);
         }
     }
 
