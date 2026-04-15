@@ -8,6 +8,19 @@
         </template>
 
         <template if:false={isLoading}>
+            <!-- Error summary banner -->
+            <template if:true={hasAnyError}>
+                <div class="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_error slds-m-bottom_small" role="alert">
+                    <span class="slds-assistive-text">error</span>
+                    <h2 class="slds-text-heading_small">Please answer the following required question(s):</h2>
+                    <ul class="slds-list_dotted slds-m-top_x-small">
+                        <template for:each={invalidRowSummaries} for:item="e">
+                            <li key={e.key}>{e.label}</li>
+                        </template>
+                    </ul>
+                </div>
+            </template>
+
             <template if:true={hasRows}>
                 <template for:each={groups} for:item="group">
                     <div key={group.key} class="slds-m-bottom_large">
@@ -39,135 +52,135 @@
 
                                         <!-- Answer Column -->
                                         <td>
-                                            <!-- Checkbox -->
-                                            <template if:true={row.isCheckbox}>
-                                                <lightning-input
-                                                    type="checkbox"
-                                                    data-index={row.index}
-                                                    data-validate
-                                                    checked={row.checkboxValue}
-                                                    onchange={handleCheckboxChange}
-                                                    variant="label-hidden"
-                                                    label={row.questionLabel}
-                                                    required={row.isRequired}
-                                                ></lightning-input>
-                                            </template>
+                                            <div data-error={row.hasError} class="answer-cell">
+                                                <!-- Checkbox -->
+                                                <template if:true={row.isCheckbox}>
+                                                    <lightning-input
+                                                        type="checkbox"
+                                                        data-index={row.index}
+                                                        data-validate
+                                                        checked={row.checkboxValue}
+                                                        onchange={handleCheckboxChange}
+                                                        variant="label-hidden"
+                                                        label={row.questionLabel}
+                                                    ></lightning-input>
+                                                </template>
 
-                                            <!-- Picklist -->
-                                            <template if:true={row.isPicklist}>
-                                                <lightning-combobox
-                                                    data-index={row.index}
-                                                    data-validate
-                                                    value={row.currentValue}
-                                                    options={row.picklistOptions}
-                                                    onchange={handlePicklistChange}
-                                                    variant="label-hidden"
-                                                    label={row.questionLabel}
-                                                    placeholder="Select an option"
-                                                    required={row.isRequired}
-                                                ></lightning-combobox>
-                                            </template>
+                                                <!-- Picklist -->
+                                                <template if:true={row.isPicklist}>
+                                                    <lightning-combobox
+                                                        data-index={row.index}
+                                                        data-validate
+                                                        value={row.currentValue}
+                                                        options={row.picklistOptions}
+                                                        onchange={handlePicklistChange}
+                                                        variant="label-hidden"
+                                                        label={row.questionLabel}
+                                                        placeholder="Select an option"
+                                                    ></lightning-combobox>
+                                                </template>
 
-                                            <!-- Multi-Select Picklist -->
-                                            <template if:true={row.isMultiSelectPicklist}>
-                                                <lightning-dual-listbox
-                                                    data-index={row.index}
-                                                    data-validate
-                                                    value={row.multiSelectValues}
-                                                    options={row.multiSelectOptions}
-                                                    onchange={handleMultiSelectChange}
-                                                    variant="label-hidden"
-                                                    label={row.questionLabel}
-                                                    source-label="Available"
-                                                    selected-label="Selected"
-                                                    required={row.isRequired}
-                                                ></lightning-dual-listbox>
-                                            </template>
+                                                <!-- Multi-Select Picklist -->
+                                                <template if:true={row.isMultiSelectPicklist}>
+                                                    <lightning-dual-listbox
+                                                        data-index={row.index}
+                                                        data-validate
+                                                        value={row.multiSelectValues}
+                                                        options={row.multiSelectOptions}
+                                                        onchange={handleMultiSelectChange}
+                                                        variant="label-hidden"
+                                                        label={row.questionLabel}
+                                                        source-label="Available"
+                                                        selected-label="Selected"
+                                                    ></lightning-dual-listbox>
+                                                </template>
 
-                                            <!-- Text -->
-                                            <template if:true={row.isText}>
-                                                <lightning-input
-                                                    type="text"
-                                                    data-index={row.index}
-                                                    data-validate
-                                                    value={row.currentValue}
-                                                    onchange={handleTextChange}
-                                                    variant="label-hidden"
-                                                    label={row.questionLabel}
-                                                    required={row.isRequired}
-                                                ></lightning-input>
-                                            </template>
+                                                <!-- Text -->
+                                                <template if:true={row.isText}>
+                                                    <lightning-input
+                                                        type="text"
+                                                        data-index={row.index}
+                                                        data-validate
+                                                        value={row.currentValue}
+                                                        onchange={handleTextChange}
+                                                        variant="label-hidden"
+                                                        label={row.questionLabel}
+                                                    ></lightning-input>
+                                                </template>
 
-                                            <!-- Date -->
-                                            <template if:true={row.isDate}>
-                                                <lightning-input
-                                                    type="date"
-                                                    data-index={row.index}
-                                                    data-validate
-                                                    value={row.currentValue}
-                                                    onchange={handleDateChange}
-                                                    variant="label-hidden"
-                                                    label={row.questionLabel}
-                                                    required={row.isRequired}
-                                                ></lightning-input>
-                                            </template>
+                                                <!-- Date -->
+                                                <template if:true={row.isDate}>
+                                                    <lightning-input
+                                                        type="date"
+                                                        data-index={row.index}
+                                                        data-validate
+                                                        value={row.currentValue}
+                                                        onchange={handleDateChange}
+                                                        variant="label-hidden"
+                                                        label={row.questionLabel}
+                                                    ></lightning-input>
+                                                </template>
 
-                                            <!-- Multiple Choice (Radio Group) -->
-                                            <template if:true={row.isMultipleChoice}>
-                                                <lightning-radio-group
-                                                    data-index={row.index}
-                                                    data-validate
-                                                    value={row.currentValue}
-                                                    options={row.multipleChoiceOptions}
-                                                    onchange={handleMultipleChoiceChange}
-                                                    variant="label-hidden"
-                                                    label={row.questionLabel}
-                                                    type="radio"
-                                                    required={row.isRequired}
-                                                ></lightning-radio-group>
-                                            </template>
+                                                <!-- Multiple Choice (Radio Group) -->
+                                                <template if:true={row.isMultipleChoice}>
+                                                    <lightning-radio-group
+                                                        data-index={row.index}
+                                                        data-validate
+                                                        value={row.currentValue}
+                                                        options={row.multipleChoiceOptions}
+                                                        onchange={handleMultipleChoiceChange}
+                                                        variant="label-hidden"
+                                                        label={row.questionLabel}
+                                                        type="radio"
+                                                    ></lightning-radio-group>
+                                                </template>
 
-                                            <!-- Numeric -->
-                                            <template if:true={row.isNumeric}>
-                                                <lightning-input
-                                                    type="number"
-                                                    data-index={row.index}
-                                                    data-validate
-                                                    value={row.currentValue}
-                                                    onchange={handleNumericChange}
-                                                    variant="label-hidden"
-                                                    label={row.questionLabel}
-                                                    step="any"
-                                                    required={row.isRequired}
-                                                ></lightning-input>
-                                            </template>
+                                                <!-- Numeric -->
+                                                <template if:true={row.isNumeric}>
+                                                    <lightning-input
+                                                        type="number"
+                                                        data-index={row.index}
+                                                        data-validate
+                                                        value={row.currentValue}
+                                                        onchange={handleNumericChange}
+                                                        variant="label-hidden"
+                                                        label={row.questionLabel}
+                                                        step="any"
+                                                    ></lightning-input>
+                                                </template>
 
-                                            <!-- Time -->
-                                            <template if:true={row.isTime}>
-                                                <lightning-input
-                                                    type="time"
-                                                    data-index={row.index}
-                                                    data-validate
-                                                    value={row.currentValue}
-                                                    onchange={handleTimeChange}
-                                                    variant="label-hidden"
-                                                    label={row.questionLabel}
-                                                    required={row.isRequired}
-                                                ></lightning-input>
-                                            </template>
+                                                <!-- Time -->
+                                                <template if:true={row.isTime}>
+                                                    <lightning-input
+                                                        type="time"
+                                                        data-index={row.index}
+                                                        data-validate
+                                                        value={row.currentValue}
+                                                        onchange={handleTimeChange}
+                                                        variant="label-hidden"
+                                                        label={row.questionLabel}
+                                                    ></lightning-input>
+                                                </template>
 
-                                            <!-- TextArea -->
-                                            <template if:true={row.isTextArea}>
-                                                <lightning-textarea
-                                                    data-index={row.index}
-                                                    data-validate
-                                                    value={row.currentValue}
-                                                    onchange={handleTextAreaChange}
-                                                    variant="label-hidden"
-                                                    label={row.questionLabel}
-                                                    required={row.isRequired}
-                                                ></lightning-textarea>
-                                            </template>
+                                                <!-- TextArea -->
+                                                <template if:true={row.isTextArea}>
+                                                    <lightning-textarea
+                                                        data-index={row.index}
+                                                        data-validate
+                                                        value={row.currentValue}
+                                                        onchange={handleTextAreaChange}
+                                                        variant="label-hidden"
+                                                        label={row.questionLabel}
+                                                    ></lightning-textarea>
+                                                </template>
+
+                                                <!-- Inline error message -->
+                                                <template if:true={row.hasError}>
+                                                    <div class="slds-text-color_error slds-text-body_small slds-m-top_xx-small" role="alert">
+                                                        {row.errorMessage}
+                                                    </div>
+                                                </template>
+                                            </div>
                                         </td>
                                     </tr>
                                 </template>

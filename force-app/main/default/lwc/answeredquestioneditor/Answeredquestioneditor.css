@@ -34,3 +34,8 @@ td .slds-truncate {
     overflow: visible !important;
     text-overflow: clip !important;
 }
+
+.answer-cell[data-error="true"] {
+    box-shadow: inset 3px 0 0 0 var(--slds-g-color-error-base-50, #ba0517);
+    padding-left: 0.5rem;
+}

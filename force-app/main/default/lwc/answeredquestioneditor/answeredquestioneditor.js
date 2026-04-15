@@ -79,21 +79,91 @@ export default class AnsweredQuestionEditor extends LightningElement {
     // ─── Flow Validation ──────────────────────────────────────────
     @api
     validate() {
-        const allValid = [...this.template.querySelectorAll('[data-validate]')]
-            .reduce((valid, cmp) => {
-                if (cmp.reportValidity) {
-                    return cmp.reportValidity() && valid;
-                }
-                return valid;
-            }, true);
+        let invalidCount = 0;
 
-        if (allValid) {
+        this._editedRows = this._editedRows.map(row => {
+            const isEmpty = this._isRowEmpty(row);
+            if (row.isRequired && isEmpty) {
+                invalidCount += 1;
+                return {
+                    ...row,
+                    hasError: true,
+                    errorMessage: 'This answer is required.'
+                };
+            }
+            return {
+                ...row,
+                hasError: false,
+                errorMessage: ''
+            };
+        });
+
+        if (invalidCount === 0) {
             return { isValid: true };
         }
+
+        // Defer scroll/focus until after the template re-renders with error state.
+        Promise.resolve().then(() => this._scrollToFirstError());
+
+        const noun = invalidCount === 1 ? 'question' : 'questions';
         return {
             isValid: false,
-            errorMessage: 'Please correct the errors before proceeding.'
+            errorMessage: `Please answer the ${invalidCount} highlighted required ${noun} below.`
         };
+    }
+
+    _isRowEmpty(row) {
+        if (row.isCheckbox) {
+            // Required-checkbox UX is out of scope; treat as always satisfied.
+            return false;
+        }
+        if (row.isMultiSelectPicklist) {
+            return !row.multiSelectValues || row.multiSelectValues.length === 0;
+        }
+        const value = row.currentValue;
+        if (value === null || value === undefined) {
+            return true;
+        }
+        return String(value).trim() === '';
+    }
+
+    _scrollToFirstError() {
+        const errorCell = this.template.querySelector('[data-error="true"]');
+        if (!errorCell) {
+            return;
+        }
+        if (typeof errorCell.scrollIntoView === 'function') {
+            errorCell.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        }
+        const input = errorCell.querySelector(
+            'lightning-input, lightning-textarea, lightning-combobox, ' +
+            'lightning-dual-listbox, lightning-radio-group'
+        );
+        if (input && typeof input.focus === 'function') {
+            input.focus();
+        }
+    }
+
+    _clearErrorForRow(idx) {
+        const row = this._editedRows[idx];
+        if (row && row.hasError) {
+            this._editedRows[idx] = {
+                ...row,
+                hasError: false,
+                errorMessage: ''
+            };
+            this._editedRows = [...this._editedRows];
+        }
+    }
+
+    get hasAnyError() {
+        return this._editedRows.some(r => r.hasError);
+    }
+
+    get invalidRowSummaries() {
+        return this._editedRows
+            .filter(r => r.hasError)
+            .map(r => ({ key: r.key, label: r.questionLabel }));
     }
 
     // ─── Apex Wire: fetch custom question info ─────────────────
@@ -190,6 +260,10 @@ export default class AnsweredQuestionEditor extends LightningElement {
                 originalRecord: aq,
                 isRequired,
 
+                // Error state (managed by validate() / change handlers)
+                hasError: false,
+                errorMessage: '',
+
                 // Type booleans for template rendering
                 isCheckbox: dataType === 'Checkbox',
                 isPicklist: dataType === 'Picklist',
@@ -246,24 +320,28 @@ export default class AnsweredQuestionEditor extends LightningElement {
     handleTextChange(event) {
         const idx = parseInt(event.target.dataset.index, 10);
         this._editedRows[idx].currentValue = event.target.value;
+        this._clearErrorForRow(idx);
         this._dispatchChange();
     }
 
     handleNumericChange(event) {
         const idx = parseInt(event.target.dataset.index, 10);
         this._editedRows[idx].currentValue = event.target.value != null ? String(event.target.value) : '';
+        this._clearErrorForRow(idx);
         this._dispatchChange();
     }
 
     handleDateChange(event) {
         const idx = parseInt(event.target.dataset.index, 10);
         this._editedRows[idx].currentValue = event.target.value || '';
+        this._clearErrorForRow(idx);
         this._dispatchChange();
     }
 
     handleTimeChange(event) {
         const idx = parseInt(event.target.dataset.index, 10);
         this._editedRows[idx].currentValue = event.target.value || '';
+        this._clearErrorForRow(idx);
         this._dispatchChange();
     }
 
@@ -272,12 +350,14 @@ export default class AnsweredQuestionEditor extends LightningElement {
         const checked = event.target.checked;
         this._editedRows[idx].checkboxValue = checked;
         this._editedRows[idx].currentValue = String(checked);
+        this._clearErrorForRow(idx);
         this._dispatchChange();
     }
 
     handlePicklistChange(event) {
         const idx = parseInt(event.target.dataset.index, 10);
         this._editedRows[idx].currentValue = event.detail.value;
+        this._clearErrorForRow(idx);
         this._dispatchChange();
     }
 
@@ -286,6 +366,7 @@ export default class AnsweredQuestionEditor extends LightningElement {
         const selectedValue = event.detail.value;
         this._editedRows[idx].currentValue = selectedValue;
         this._editedRows[idx].multiSelectValues = selectedValue ? selectedValue.split(';') : [];
+        this._clearErrorForRow(idx);
         this._dispatchChange();
     }
 
@@ -297,12 +378,14 @@ export default class AnsweredQuestionEditor extends LightningElement {
             ...o,
             checked: o.value === selectedValue
         }));
+        this._clearErrorForRow(idx);
         this._dispatchChange();
     }
 
     handleTextAreaChange(event) {
         const idx = parseInt(event.target.dataset.index, 10);
         this._editedRows[idx].currentValue = event.target.value;
+        this._clearErrorForRow(idx);
         this._dispatchChange();
     }
 
