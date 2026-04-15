@@ -74,3 +74,91 @@ td .slds-truncate {
     white-space: normal;
     word-break: break-word;
 }
+
+.next-button-wrapper {
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* ─── Mobile layout ────────────────────────────────────────────
+   On narrow viewports stack the Question above the Answer inside a
+   card-like container. Uses !important because renderedCallback sets
+   some td styles inline (max-width:0, whiteSpace:normal, etc.) that
+   would otherwise win the cascade. */
+@media (max-width: 48em) {
+    .slds-card.slds-p-around_medium {
+        padding: 0.5rem !important;
+    }
+
+    .group-header {
+        font-size: 1rem;
+    }
+
+    table.slds-table,
+    table.slds-table tbody {
+        display: block !important;
+        width: 100% !important;
+    }
+
+    table.slds-table thead {
+        display: none !important;
+    }
+
+    table.slds-table tr {
+        display: block !important;
+        width: 100% !important;
+        margin-bottom: 0.75rem !important;
+        border: 1px solid var(--lwc-colorBorder, #c9c9c9) !important;
+        border-radius: 0.25rem !important;
+        background-color: #fff !important;
+    }
+
+    table.slds-table td {
+        display: block !important;
+        width: 100% !important;
+        max-width: none !important;
+        white-space: normal !important;
+        padding: 0.5rem 0.75rem !important;
+        border: none !important;
+    }
+
+    .question-cell {
+        padding-bottom: 0 !important;
+    }
+
+    .question-label {
+        font-size: 0.95rem;
+        padding-top: 0 !important;
+    }
+
+    /* Keep the error highlight spanning the whole stacked row */
+    .answer-row[data-error="true"] {
+        border-color: var(--slds-g-color-error-base-50, #ba0517) !important;
+        box-shadow: 0 0 0 2px var(--slds-g-color-error-base-50, #ba0517) !important;
+    }
+    .answer-row[data-error="true"] > td {
+        background-color: #fdecea !important;
+        box-shadow: none !important;
+    }
+
+    /* Full-width, tap-friendly Next button.
+       SLDS styling hooks (--slds-c-button-*) pierce the lightning-button
+       shadow DOM; display:block + width:100% sizes the host. */
+    .next-button-wrapper {
+        justify-content: stretch;
+    }
+    .next-button-wrapper lightning-button {
+        display: block;
+        width: 100%;
+        --slds-c-button-sizing-min-height: 2.75rem;
+        --slds-c-button-brand-sizing-min-width: 100%;
+    }
+
+    /* Error banner sized for small screens */
+    .error-banner h2 {
+        font-size: 0.95rem;
+    }
+    .error-banner li {
+        font-size: 0.9rem;
+    }
+}
