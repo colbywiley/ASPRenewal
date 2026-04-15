@@ -1,0 +1,36 @@
+.question-label {
+    font-weight: 600;
+    color: var(--lwc-colorTextDefault, #181818);
+    padding-top: 0.25rem;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+}
+
+.group-header {
+    font-weight: 700;
+    color: var(--lwc-colorTextDefault, #181818);
+    border-bottom: 2px solid var(--lwc-colorBorder, #c9c9c9);
+    padding-bottom: 0.5rem;
+}
+
+td {
+    vertical-align: top;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    white-space: normal !important;
+    max-width: 0;
+}
+
+th {
+    white-space: normal !important;
+}
+
+td .question-label,
+td .slds-truncate {
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+}

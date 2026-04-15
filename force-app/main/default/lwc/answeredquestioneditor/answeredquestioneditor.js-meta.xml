@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>62.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>Answered Question Editor</masterLabel>
+    <description>Displays a collection of Answered Questions and allows editing answers based on their data type. Returns a new collection without Ids.</description>
+    <targets>
+        <target>lightning__FlowScreen</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightning__FlowScreen">
+            <property
+                name="inputAnsweredQuestions"
+                type="@salesforce/schema/TREX1__Answered_Question__c[]"
+                label="Input Answered Questions"
+                description="The collection of Answered Question records to display and edit."
+                role="inputOnly"
+            />
+            <property
+                name="outputAnsweredQuestions"
+                type="@salesforce/schema/TREX1__Answered_Question__c[]"
+                label="Output Answered Questions (No Ids)"
+                description="The edited collection of Answered Question records without Ids, for creating new records."
+                role="outputOnly"
+            />
+            <property
+                name="outputAnsweredQuestionsWithIds"
+                type="@salesforce/schema/TREX1__Answered_Question__c[]"
+                label="Output Answered Questions (With Ids)"
+                description="The edited collection of Answered Question records with Ids, for updating existing records."
+                role="outputOnly"
+            />
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>
