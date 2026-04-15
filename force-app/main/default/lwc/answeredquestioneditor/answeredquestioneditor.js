@@ -1,5 +1,5 @@
 import { LightningElement, api, wire } from 'lwc';
-import { FlowAttributeChangeEvent } from 'lightning/flowSupport';
+import { FlowAttributeChangeEvent, FlowNavigationNextEvent } from 'lightning/flowSupport';
 import getCustomQuestionInfo from '@salesforce/apex/AnsweredQuestionEditorController.getCustomQuestionInfo';
 
 export default class AnsweredQuestionEditor extends LightningElement {
@@ -78,29 +78,39 @@ export default class AnsweredQuestionEditor extends LightningElement {
     }
 
     // ─── Flow Validation ──────────────────────────────────────────
+    // The component owns its own Next button (see handleNext). We keep this
+    // @api method as a no-op stub so that if the Flow framework ever calls
+    // it (e.g. the standard footer is still visible on a screen variant),
+    // it never returns false — a false return causes the Flow to recreate
+    // the LWC, which wipes user edits.
     @api
     validate() {
+        return { isValid: true };
+    }
+
+    _computeErrors() {
         const nextErrors = {};
         this._editedRows.forEach(row => {
             if (row.isRequired && this._isRowEmpty(row)) {
                 nextErrors[row.index] = 'This answer is required.';
             }
         });
+        return nextErrors;
+    }
+
+    handleNext() {
+        const nextErrors = this._computeErrors();
         this._errorsByIndex = nextErrors;
 
-        const invalidCount = Object.keys(nextErrors).length;
-        if (invalidCount === 0) {
-            return { isValid: true };
+        if (Object.keys(nextErrors).length === 0) {
+            // Push the latest values to the flow variables, then navigate.
+            this._dispatchChange();
+            this.dispatchEvent(new FlowNavigationNextEvent());
+            return;
         }
 
         // Defer scroll/focus until the template has rendered the error state.
         Promise.resolve().then(() => this._scrollToFirstError());
-
-        const noun = invalidCount === 1 ? 'question' : 'questions';
-        return {
-            isValid: false,
-            errorMessage: `Please answer the ${invalidCount} highlighted required ${noun}. See the list at the top of the form.`
-        };
     }
 
     _isRowEmpty(row) {

@@ -35,9 +35,14 @@ td .slds-truncate {
     text-overflow: clip !important;
 }
 
-.answer-cell[data-error="true"] {
+.answer-row[data-error="true"] > td {
+    background-color: #fdecea !important;
     box-shadow: inset 3px 0 0 0 var(--slds-g-color-error-base-50, #ba0517);
-    padding-left: 0.5rem;
+}
+
+.answer-row[data-error="true"] .question-label {
+    color: var(--slds-g-color-error-base-50, #ba0517);
+    font-weight: 700;
 }
 
 .question-label .slds-required {

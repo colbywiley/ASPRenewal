@@ -42,9 +42,9 @@
                             </thead>
                             <tbody>
                                 <template for:each={group.rows} for:item="row">
-                                    <tr key={row.key}>
+                                    <tr key={row.key} data-error={row.hasError} class="answer-row">
                                         <!-- Question Column -->
-                                        <td class="slds-align-top slds-p-top_small">
+                                        <td class="slds-align-top slds-p-top_small question-cell">
                                             <div class="slds-text-body_regular question-label">
                                                 {row.questionLabel}<template if:true={row.isRequired}><abbr class="slds-required" title="required">*</abbr></template>
                                             </div>
@@ -52,7 +52,7 @@
 
                                         <!-- Answer Column -->
                                         <td>
-                                            <div data-error={row.hasError} class="answer-cell">
+                                            <div class="answer-cell">
                                                 <!-- Checkbox -->
                                                 <template if:true={row.isCheckbox}>
                                                     <lightning-input
@@ -201,6 +201,16 @@
                         </ul>
                     </div>
                 </template>
+
+                <!-- Next navigation (replaces the flow's default footer) -->
+                <div class="slds-m-top_medium slds-grid slds-grid_align-end">
+                    <lightning-button
+                        variant="brand"
+                        label="Next"
+                        title="Validate answers and continue"
+                        onclick={handleNext}
+                    ></lightning-button>
+                </div>
             </template>
 
             <template if:false={hasRows}>
