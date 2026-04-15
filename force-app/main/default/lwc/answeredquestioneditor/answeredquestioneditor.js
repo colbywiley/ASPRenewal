@@ -12,9 +12,40 @@ export default class AnsweredQuestionEditor extends LightningElement {
     _initialized = false;
     _apexLoaded = false;
     _stylesApplied = false;
+    _isNarrow = false;
+    _resizeObserver = null;
 
     // ─── Lifecycle ────────────────────────────────────────────────
+    connectedCallback() {
+        // Seed initial narrow state from the viewport; the ResizeObserver
+        // will correct it once the host element has a measured width.
+        if (typeof window !== 'undefined') {
+            this._isNarrow = window.innerWidth < 640;
+        }
+    }
+
+    disconnectedCallback() {
+        if (this._resizeObserver) {
+            this._resizeObserver.disconnect();
+            this._resizeObserver = null;
+        }
+    }
+
     renderedCallback() {
+        const host = this.template && this.template.host;
+        if (!this._resizeObserver && host && typeof ResizeObserver !== 'undefined') {
+            this._resizeObserver = new ResizeObserver(entries => {
+                for (const entry of entries) {
+                    const width = entry.contentRect ? entry.contentRect.width : 0;
+                    const narrow = width > 0 && width < 640;
+                    if (narrow !== this._isNarrow) {
+                        this._isNarrow = narrow;
+                    }
+                }
+            });
+            this._resizeObserver.observe(host);
+        }
+
         if (!this._stylesApplied && this._editedRows.length > 0) {
             this._stylesApplied = true;
             this._applyStyles();
@@ -22,21 +53,19 @@ export default class AnsweredQuestionEditor extends LightningElement {
     }
 
     _applyStyles() {
-        // Force table-layout fixed on all tables
+        // Word-wrap behavior inside the fixed-width desktop table. These
+        // styles are overridden on narrow viewports by the .is-narrow rules
+        // in the component's CSS.
         this.template.querySelectorAll('table').forEach(table => {
             table.style.tableLayout = 'fixed';
             table.style.width = '100%';
         });
-
-        // Force word wrap on all table cells
         this.template.querySelectorAll('td').forEach(td => {
             td.style.whiteSpace = 'normal';
             td.style.wordWrap = 'break-word';
             td.style.overflowWrap = 'break-word';
             td.style.maxWidth = '0';
         });
-
-        // Force font on textarea elements inside lightning-textarea
         this.template.querySelectorAll('lightning-textarea').forEach(cmp => {
             const ta = cmp.shadowRoot && cmp.shadowRoot.querySelector('textarea');
             if (ta) {
@@ -44,6 +73,12 @@ export default class AnsweredQuestionEditor extends LightningElement {
                 ta.style.fontSize = '0.875rem';
             }
         });
+    }
+
+    get rootClass() {
+        return this._isNarrow
+            ? 'slds-card slds-p-around_x-small is-narrow'
+            : 'slds-card slds-p-around_medium';
     }
 
     // ─── Flow Inputs ──────────────────────────────────────────────
