@@ -10,10 +10,10 @@
         <template if:false={isLoading}>
             <!-- Error summary banner (top) -->
             <template if:true={hasAnyError}>
-                <div data-error-banner="true" class="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_error slds-m-bottom_small" role="alert">
+                <div data-error-banner="true" class="error-banner slds-theme_error slds-p-around_small slds-m-bottom_small" role="alert">
                     <span class="slds-assistive-text">error</span>
-                    <h2 class="slds-text-heading_small">Please answer the following required question(s):</h2>
-                    <ul class="slds-list_dotted slds-m-top_x-small">
+                    <h2 class="slds-text-heading_small slds-text-align_left">Please answer the following required question(s):</h2>
+                    <ul class="slds-list_dotted slds-m-top_x-small slds-text-align_left">
                         <template for:each={invalidRowSummaries} for:item="e">
                             <li key={e.key}>{e.label}</li>
                         </template>
@@ -191,10 +191,10 @@
 
                 <!-- Error summary banner (bottom) -->
                 <template if:true={hasAnyError}>
-                    <div class="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_error slds-m-top_small" role="alert">
+                    <div class="error-banner slds-theme_error slds-p-around_small slds-m-top_small" role="alert">
                         <span class="slds-assistive-text">error</span>
-                        <h2 class="slds-text-heading_small">There are {invalidRowCount} required question(s) that need an answer above:</h2>
-                        <ul class="slds-list_dotted slds-m-top_x-small">
+                        <h2 class="slds-text-heading_small slds-text-align_left">There are {invalidRowCount} required question(s) that need an answer above:</h2>
+                        <ul class="slds-list_dotted slds-m-top_x-small slds-text-align_left">
                             <template for:each={invalidRowSummaries} for:item="e">
                                 <li key={e.key}>{e.label}</li>
                             </template>

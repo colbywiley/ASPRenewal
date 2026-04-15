@@ -51,3 +51,26 @@ td .slds-truncate {
     text-decoration: none;
     font-weight: 700;
 }
+
+.error-banner {
+    color: #fff;
+    border-radius: 0.25rem;
+}
+
+.error-banner h2,
+.error-banner ul,
+.error-banner li {
+    text-align: left;
+    color: #fff;
+}
+
+.error-banner ul {
+    padding-left: 1.25rem;
+    margin-left: 0;
+    list-style-position: outside;
+}
+
+.error-banner li {
+    white-space: normal;
+    word-break: break-word;
+}
