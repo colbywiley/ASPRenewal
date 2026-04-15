@@ -2,6 +2,8 @@ import { LightningElement, api, wire } from 'lwc';
 import { FlowAttributeChangeEvent, FlowNavigationNextEvent } from 'lightning/flowSupport';
 import getCustomQuestionInfo from '@salesforce/apex/AnsweredQuestionEditorController.getCustomQuestionInfo';
 
+const NARROW_BREAKPOINT = 640;
+
 export default class AnsweredQuestionEditor extends LightningElement {
     _inputAnsweredQuestions = [];
     _inputQuestionGroups = [];
@@ -11,56 +13,42 @@ export default class AnsweredQuestionEditor extends LightningElement {
     _errorsByIndex = {};
     _initialized = false;
     _apexLoaded = false;
-    _stylesApplied = false;
     _isNarrow = false;
-    _resizeObserver = null;
+    _resizeHandler = null;
 
     // ─── Lifecycle ────────────────────────────────────────────────
     connectedCallback() {
-        // Seed initial narrow state from the viewport; the ResizeObserver
-        // will correct it once the host element has a measured width.
+        this._resizeHandler = this._onResize.bind(this);
         if (typeof window !== 'undefined') {
-            this._setNarrow(window.innerWidth < 640);
+            window.addEventListener('resize', this._resizeHandler);
+            this._isNarrow = window.innerWidth < NARROW_BREAKPOINT;
         }
     }
 
     disconnectedCallback() {
-        if (this._resizeObserver) {
-            this._resizeObserver.disconnect();
-            this._resizeObserver = null;
+        if (this._resizeHandler && typeof window !== 'undefined') {
+            window.removeEventListener('resize', this._resizeHandler);
         }
+        this._resizeHandler = null;
     }
 
     renderedCallback() {
-        const host = this.template && this.template.host;
-        if (!this._resizeObserver && host && typeof ResizeObserver !== 'undefined') {
-            this._resizeObserver = new ResizeObserver(entries => {
-                for (const entry of entries) {
-                    const width = entry.contentRect ? entry.contentRect.width : 0;
-                    if (width > 0) {
-                        this._setNarrow(width < 640);
-                    }
-                }
-            });
-            this._resizeObserver.observe(host);
-        }
-
-        // Ensure the host element's class reflects the current narrow state
-        // even if the reactive field was seeded in connectedCallback before
-        // the host element had classList available.
         this._syncHostClass();
-
-        if (!this._stylesApplied && this._editedRows.length > 0) {
-            this._stylesApplied = true;
-            this._applyStyles();
-        }
+        this._applyLayoutStyles();
+        this._applyTextareaFont();
     }
 
-    _setNarrow(narrow) {
+    _onResize() {
+        if (typeof window === 'undefined') return;
+        const narrow = window.innerWidth < NARROW_BREAKPOINT;
         if (narrow !== this._isNarrow) {
             this._isNarrow = narrow;
         }
+        // Always reapply — a no-op when nothing changed, but cheap and
+        // guarantees the DOM reflects reality even if the reactive
+        // re-render path is interrupted by the flow.
         this._syncHostClass();
+        this._applyLayoutStyles();
     }
 
     _syncHostClass() {
@@ -69,20 +57,71 @@ export default class AnsweredQuestionEditor extends LightningElement {
         }
     }
 
-    _applyStyles() {
-        // Word-wrap behavior inside the fixed-width desktop table. These
-        // styles are overridden on narrow viewports by the .is-narrow rules
-        // in the component's CSS.
+    // Directly apply the stacked-vs-table display on the DOM. Bypasses the
+    // CSS cascade entirely so neither SLDS rules, LWC scope rewriting, nor
+    // leftover inline styles can defeat it.
+    _applyLayoutStyles() {
+        const narrow = this._isNarrow;
+
         this.template.querySelectorAll('table').forEach(table => {
-            table.style.tableLayout = 'fixed';
             table.style.width = '100%';
+            if (narrow) {
+                table.style.display = 'block';
+                table.style.tableLayout = '';
+            } else {
+                table.style.display = '';
+                table.style.tableLayout = 'fixed';
+            }
         });
+
+        this.template.querySelectorAll('tbody').forEach(tb => {
+            tb.style.display = narrow ? 'block' : '';
+            tb.style.width = narrow ? '100%' : '';
+        });
+
+        this.template.querySelectorAll('thead').forEach(th => {
+            th.style.display = narrow ? 'none' : '';
+        });
+
+        this.template.querySelectorAll('tr').forEach(tr => {
+            if (narrow) {
+                tr.style.display = 'block';
+                tr.style.width = '100%';
+                tr.style.marginBottom = '0.75rem';
+                tr.style.border = '1px solid #c9c9c9';
+                tr.style.borderRadius = '0.25rem';
+                tr.style.backgroundColor = '#fff';
+            } else {
+                tr.style.display = '';
+                tr.style.width = '';
+                tr.style.marginBottom = '';
+                tr.style.border = '';
+                tr.style.borderRadius = '';
+                tr.style.backgroundColor = '';
+            }
+        });
+
         this.template.querySelectorAll('td').forEach(td => {
             td.style.whiteSpace = 'normal';
             td.style.wordWrap = 'break-word';
             td.style.overflowWrap = 'break-word';
-            td.style.maxWidth = '0';
+            if (narrow) {
+                td.style.display = 'block';
+                td.style.width = '100%';
+                td.style.maxWidth = 'none';
+                td.style.padding = '0.5rem 0.75rem';
+                td.style.border = 'none';
+            } else {
+                td.style.display = '';
+                td.style.width = '';
+                td.style.maxWidth = '0';
+                td.style.padding = '';
+                td.style.border = '';
+            }
         });
+    }
+
+    _applyTextareaFont() {
         this.template.querySelectorAll('lightning-textarea').forEach(cmp => {
             const ta = cmp.shadowRoot && cmp.shadowRoot.querySelector('textarea');
             if (ta) {
