@@ -63,6 +63,7 @@
                                                         onchange={handleCheckboxChange}
                                                         variant="label-hidden"
                                                         label={row.questionLabel}
+                                                        required={row.isRequired}
                                                     ></lightning-input>
                                                 </template>
 
@@ -77,6 +78,7 @@
                                                         variant="label-hidden"
                                                         label={row.questionLabel}
                                                         placeholder="Select an option"
+                                                        required={row.isRequired}
                                                     ></lightning-combobox>
                                                 </template>
 
@@ -92,6 +94,7 @@
                                                         label={row.questionLabel}
                                                         source-label="Available"
                                                         selected-label="Selected"
+                                                        required={row.isRequired}
                                                     ></lightning-dual-listbox>
                                                 </template>
 
@@ -105,6 +108,7 @@
                                                         onchange={handleTextChange}
                                                         variant="label-hidden"
                                                         label={row.questionLabel}
+                                                        required={row.isRequired}
                                                     ></lightning-input>
                                                 </template>
 
@@ -118,6 +122,7 @@
                                                         onchange={handleDateChange}
                                                         variant="label-hidden"
                                                         label={row.questionLabel}
+                                                        required={row.isRequired}
                                                     ></lightning-input>
                                                 </template>
 
@@ -132,6 +137,7 @@
                                                         variant="label-hidden"
                                                         label={row.questionLabel}
                                                         type="radio"
+                                                        required={row.isRequired}
                                                     ></lightning-radio-group>
                                                 </template>
 
@@ -146,6 +152,7 @@
                                                         variant="label-hidden"
                                                         label={row.questionLabel}
                                                         step="any"
+                                                        required={row.isRequired}
                                                     ></lightning-input>
                                                 </template>
 
@@ -159,6 +166,7 @@
                                                         onchange={handleTimeChange}
                                                         variant="label-hidden"
                                                         label={row.questionLabel}
+                                                        required={row.isRequired}
                                                     ></lightning-input>
                                                 </template>
 
@@ -171,6 +179,7 @@
                                                         onchange={handleTextAreaChange}
                                                         variant="label-hidden"
                                                         label={row.questionLabel}
+                                                        required={row.isRequired}
                                                     ></lightning-textarea>
                                                 </template>
 

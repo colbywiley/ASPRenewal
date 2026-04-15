@@ -114,8 +114,8 @@ export default class AnsweredQuestionEditor extends LightningElement {
 
     _isRowEmpty(row) {
         if (row.isCheckbox) {
-            // Required-checkbox UX is out of scope; treat as always satisfied.
-            return false;
+            // A required checkbox must be checked.
+            return !row.checkboxValue;
         }
         if (row.isMultiSelectPicklist) {
             return !row.multiSelectValues || row.multiSelectValues.length === 0;
