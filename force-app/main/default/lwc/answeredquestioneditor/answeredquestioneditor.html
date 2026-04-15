@@ -8,9 +8,9 @@
         </template>
 
         <template if:false={isLoading}>
-            <!-- Error summary banner -->
+            <!-- Error summary banner (top) -->
             <template if:true={hasAnyError}>
-                <div class="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_error slds-m-bottom_small" role="alert">
+                <div data-error-banner="true" class="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_error slds-m-bottom_small" role="alert">
                     <span class="slds-assistive-text">error</span>
                     <h2 class="slds-text-heading_small">Please answer the following required question(s):</h2>
                     <ul class="slds-list_dotted slds-m-top_x-small">
@@ -46,7 +46,7 @@
                                         <!-- Question Column -->
                                         <td class="slds-align-top slds-p-top_small">
                                             <div class="slds-text-body_regular question-label">
-                                                {row.questionLabel}
+                                                {row.questionLabel}<template if:true={row.isRequired}><abbr class="slds-required" title="required">*</abbr></template>
                                             </div>
                                         </td>
 
@@ -63,7 +63,6 @@
                                                         onchange={handleCheckboxChange}
                                                         variant="label-hidden"
                                                         label={row.questionLabel}
-                                                        required={row.isRequired}
                                                     ></lightning-input>
                                                 </template>
 
@@ -78,7 +77,6 @@
                                                         variant="label-hidden"
                                                         label={row.questionLabel}
                                                         placeholder="Select an option"
-                                                        required={row.isRequired}
                                                     ></lightning-combobox>
                                                 </template>
 
@@ -94,7 +92,6 @@
                                                         label={row.questionLabel}
                                                         source-label="Available"
                                                         selected-label="Selected"
-                                                        required={row.isRequired}
                                                     ></lightning-dual-listbox>
                                                 </template>
 
@@ -108,7 +105,6 @@
                                                         onchange={handleTextChange}
                                                         variant="label-hidden"
                                                         label={row.questionLabel}
-                                                        required={row.isRequired}
                                                     ></lightning-input>
                                                 </template>
 
@@ -122,7 +118,6 @@
                                                         onchange={handleDateChange}
                                                         variant="label-hidden"
                                                         label={row.questionLabel}
-                                                        required={row.isRequired}
                                                     ></lightning-input>
                                                 </template>
 
@@ -137,7 +132,6 @@
                                                         variant="label-hidden"
                                                         label={row.questionLabel}
                                                         type="radio"
-                                                        required={row.isRequired}
                                                     ></lightning-radio-group>
                                                 </template>
 
@@ -152,7 +146,6 @@
                                                         variant="label-hidden"
                                                         label={row.questionLabel}
                                                         step="any"
-                                                        required={row.isRequired}
                                                     ></lightning-input>
                                                 </template>
 
@@ -166,7 +159,6 @@
                                                         onchange={handleTimeChange}
                                                         variant="label-hidden"
                                                         label={row.questionLabel}
-                                                        required={row.isRequired}
                                                     ></lightning-input>
                                                 </template>
 
@@ -179,7 +171,6 @@
                                                         onchange={handleTextAreaChange}
                                                         variant="label-hidden"
                                                         label={row.questionLabel}
-                                                        required={row.isRequired}
                                                     ></lightning-textarea>
                                                 </template>
 
@@ -195,6 +186,19 @@
                                 </template>
                             </tbody>
                         </table>
+                    </div>
+                </template>
+
+                <!-- Error summary banner (bottom) -->
+                <template if:true={hasAnyError}>
+                    <div class="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_error slds-m-top_small" role="alert">
+                        <span class="slds-assistive-text">error</span>
+                        <h2 class="slds-text-heading_small">There are {invalidRowCount} required question(s) that need an answer above:</h2>
+                        <ul class="slds-list_dotted slds-m-top_x-small">
+                            <template for:each={invalidRowSummaries} for:item="e">
+                                <li key={e.key}>{e.label}</li>
+                            </template>
+                        </ul>
                     </div>
                 </template>
             </template>

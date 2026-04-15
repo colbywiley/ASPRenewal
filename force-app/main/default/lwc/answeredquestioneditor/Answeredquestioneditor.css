@@ -39,3 +39,10 @@ td .slds-truncate {
     box-shadow: inset 3px 0 0 0 var(--slds-g-color-error-base-50, #ba0517);
     padding-left: 0.5rem;
 }
+
+.question-label .slds-required {
+    color: var(--slds-g-color-error-base-50, #ba0517);
+    margin-left: 0.125rem;
+    text-decoration: none;
+    font-weight: 700;
+}

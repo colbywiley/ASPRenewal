@@ -8,6 +8,7 @@ export default class AnsweredQuestionEditor extends LightningElement {
     _editedRows = [];
     _groupNameMap = {};
     _cqInfoMap = {};
+    _errorsByIndex = {};
     _initialized = false;
     _apexLoaded = false;
     _stylesApplied = false;
@@ -79,36 +80,26 @@ export default class AnsweredQuestionEditor extends LightningElement {
     // ─── Flow Validation ──────────────────────────────────────────
     @api
     validate() {
-        let invalidCount = 0;
-
-        this._editedRows = this._editedRows.map(row => {
-            const isEmpty = this._isRowEmpty(row);
-            if (row.isRequired && isEmpty) {
-                invalidCount += 1;
-                return {
-                    ...row,
-                    hasError: true,
-                    errorMessage: 'This answer is required.'
-                };
+        const nextErrors = {};
+        this._editedRows.forEach(row => {
+            if (row.isRequired && this._isRowEmpty(row)) {
+                nextErrors[row.index] = 'This answer is required.';
             }
-            return {
-                ...row,
-                hasError: false,
-                errorMessage: ''
-            };
         });
+        this._errorsByIndex = nextErrors;
 
+        const invalidCount = Object.keys(nextErrors).length;
         if (invalidCount === 0) {
             return { isValid: true };
         }
 
-        // Defer scroll/focus until after the template re-renders with error state.
+        // Defer scroll/focus until the template has rendered the error state.
         Promise.resolve().then(() => this._scrollToFirstError());
 
         const noun = invalidCount === 1 ? 'question' : 'questions';
         return {
             isValid: false,
-            errorMessage: `Please answer the ${invalidCount} highlighted required ${noun} below.`
+            errorMessage: `Please answer the ${invalidCount} highlighted required ${noun}. See the list at the top of the form.`
         };
     }
 
@@ -129,40 +120,43 @@ export default class AnsweredQuestionEditor extends LightningElement {
 
     _scrollToFirstError() {
         const errorCell = this.template.querySelector('[data-error="true"]');
-        if (!errorCell) {
-            return;
-        }
-        if (typeof errorCell.scrollIntoView === 'function') {
+        if (errorCell && typeof errorCell.scrollIntoView === 'function') {
             errorCell.scrollIntoView({ block: 'center', behavior: 'smooth' });
         }
-        const input = errorCell.querySelector(
-            'lightning-input, lightning-textarea, lightning-combobox, ' +
-            'lightning-dual-listbox, lightning-radio-group'
-        );
-        if (input && typeof input.focus === 'function') {
-            input.focus();
+        const banner = this.template.querySelector('[data-error-banner="true"]');
+        if (banner && typeof banner.scrollIntoView === 'function') {
+            banner.scrollIntoView({ block: 'start', behavior: 'smooth' });
+        }
+        if (errorCell) {
+            const input = errorCell.querySelector(
+                'lightning-input, lightning-textarea, lightning-combobox, ' +
+                'lightning-dual-listbox, lightning-radio-group'
+            );
+            if (input && typeof input.focus === 'function') {
+                input.focus();
+            }
         }
     }
 
     _clearErrorForRow(idx) {
-        const row = this._editedRows[idx];
-        if (row && row.hasError) {
-            this._editedRows[idx] = {
-                ...row,
-                hasError: false,
-                errorMessage: ''
-            };
-            this._editedRows = [...this._editedRows];
+        if (this._errorsByIndex[idx]) {
+            const next = { ...this._errorsByIndex };
+            delete next[idx];
+            this._errorsByIndex = next;
         }
     }
 
     get hasAnyError() {
-        return this._editedRows.some(r => r.hasError);
+        return Object.keys(this._errorsByIndex).length > 0;
+    }
+
+    get invalidRowCount() {
+        return Object.keys(this._errorsByIndex).length;
     }
 
     get invalidRowSummaries() {
         return this._editedRows
-            .filter(r => r.hasError)
+            .filter(r => this._errorsByIndex[r.index])
             .map(r => ({ key: r.key, label: r.questionLabel }));
     }
 
@@ -208,7 +202,12 @@ export default class AnsweredQuestionEditor extends LightningElement {
                     rows: []
                 });
             }
-            groupMap.get(groupName).rows.push(row);
+            const errorMessage = this._errorsByIndex[row.index] || '';
+            groupMap.get(groupName).rows.push({
+                ...row,
+                hasError: !!errorMessage,
+                errorMessage
+            });
         });
         return Array.from(groupMap.values());
     }
@@ -259,10 +258,6 @@ export default class AnsweredQuestionEditor extends LightningElement {
                 currentValue: answer,
                 originalRecord: aq,
                 isRequired,
-
-                // Error state (managed by validate() / change handlers)
-                hasError: false,
-                errorMessage: '',
 
                 // Type booleans for template rendering
                 isCheckbox: dataType === 'Checkbox',
